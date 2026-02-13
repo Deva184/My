@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Love Letter 💌</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  height:100vh;
+  overflow:hidden;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#ff9a9e,#fad0c4,#ffdde1);
+  background-size:400% 400%;
+  animation:bgMove 12s ease infinite;
+  perspective:1200px;
+}
+
+@keyframes bgMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+/* floating hearts */
+.heart{
+  position:absolute;
+  color:#ff4e6a;
+  font-size:20px;
+  animation:floatUp linear forwards;
+}
+@keyframes floatUp{
+  from{transform:translateY(100vh) scale(.6);opacity:0;}
+  to{transform:translateY(-10vh) scale(1.4);opacity:1;}
+}
+
+/* envelope */
+.envelope{
+  width:360px;
+  height:240px;
+  background:white;
+  border-radius:16px;
+  cursor:pointer;
+  box-shadow:0 30px 70px rgba(0,0,0,.4);
+  transition:1s;
+  transform-style:preserve-3d;
+}
+.envelope:hover{transform:scale(1.05);}
+
+.envelope.open{
+  transform:rotateX(180deg);
+}
+
+/* letter */
+.letter{
+  position:absolute;
+  width:92%;
+  max-width:900px;
+  height:88vh;
+  background:white;
+  border-radius:20px;
+  padding:25px;
+  box-shadow:0 40px 100px rgba(0,0,0,.5);
+  transform:scale(.2);
+  opacity:0;
+  transition:1s;
+  overflow-y:auto;
+}
+
+.letter.show{
+  transform:scale(1);
+  opacity:1;
+}
+
+h2{
+  text-align:center;
+  font-family:'Caveat';
+  font-size:42px;
+  color:#ff4e6a;
+  margin-bottom:20px;
+}
+
+/* gallery 3D */
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:18px;
+  perspective:1000px;
+}
+
+.gallery img{
+  width:100%;
+  height:200px;
+  object-fit:cover;
+  border-radius:16px;
+  opacity:0;
+  transform:rotateY(90deg) scale(.6);
+  filter:blur(8px);
+  transition:.9s;
+  box-shadow:0 20px 40px rgba(0,0,0,.3);
+}
+
+.gallery img.show{
+  opacity:1;
+  transform:rotateY(0deg) scale(1);
+  filter:blur(0);
+}
+
+.gallery img:hover{
+  transform:scale(1.08) translateZ(30px);
+}
+
+/* message */
+.msg{
+  font-family:Caveat;
+  font-size:30px;
+  text-align:center;
+  margin-top:20px;
+}
+
+/* fireworks */
+canvas{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="fire"></canvas>
+
+<div class="envelope" id="env" onclick="openLetter()"></div>
+
+<div class="letter" id="letter">
+
+<h2>💖 Happy Birthday 💖</h2>
+
+<div class="gallery">
+  <img src="images/img1.jpg">
+  <img src="images/img2.jpg">
+  <img src="images/img3.jpg">
+  <img src="images/img4.jpg">
+  <img src="images/img5.jpg">
+</div>
+
+<p class="msg">
+You are special ✨<br>
+Stay happy always 💕<br>
+Lots of love 💌
+</p>
+
+</div>
+
+<script>
+
+/* envelope open */
+function openLetter(){
+  env.classList.add("open");
+  setTimeout(()=>{
+    letter.classList.add("show");
+    animateImages();
+    startFireworks();
+  },900);
+}
+
+/* one by one image animation */
+function animateImages(){
+  document.querySelectorAll(".gallery img")
+    .forEach((img,i)=>{
+      setTimeout(()=>img.classList.add("show"), i*500);
+    });
+}
+
+/* floating hearts */
+setInterval(()=>{
+  let h=document.createElement("div");
+  h.className="heart";
+  h.innerHTML="❤";
+  h.style.left=Math.random()*100+"vw";
+  h.style.animationDuration=(4+Math.random()*4)+"s";
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(),8000);
+},350);
+
+/* fireworks */
+let canvas=document.getElementById("fire");
+let ctx=canvas.getContext("2d");
+function resize(){
+  canvas.width=innerWidth;
+  canvas.height=innerHeight;
+}
+resize();
+onresize=resize;
+
+let parts=[];
+
+function startFireworks(){
+  setInterval(()=>{
+    let cx=Math.random()*canvas.width;
+    let cy=Math.random()*canvas.height/2;
+    for(let i=0;i<80;i++){
+      parts.push({
+        x:cx,y:cy,
+        dx:(Math.random()-0.5)*8,
+        dy:(Math.random()-0.5)*8,
+        r:Math.random()*3+1,
+        life:100
+      });
+    }
+  },700);
+}
+
+function anim(){
+  ctx.fillStyle="rgba(0,0,0,.15)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  for(let i=parts.length-1;i>=0;i--){
+    let p=parts[i];
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${Math.random()*360},100%,60%)`;
+    ctx.fill();
+    p.x+=p.dx; p.y+=p.dy; p.life--;
+    if(p.life<=0) parts.splice(i,1);
+  }
+  requestAnimationFrame(anim);
+}
+anim();
+
+</script>
+
+</body>
+</html>
